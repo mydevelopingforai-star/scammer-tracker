@@ -11,10 +11,10 @@ import { eq } from "drizzle-orm";
 
 export interface IStorage {
   // Links
-  getTrackingLinks(): Promise<TrackingLink[]>;
+  getTrackingLinks(ip?: string): Promise<TrackingLink[]>;
   getTrackingLinkByToken(token: string): Promise<TrackingLink | undefined>;
   getTrackingLinkById(id: number): Promise<TrackingLink | undefined>;
-  createTrackingLink(link: InsertTrackingLink & { token: string }): Promise<TrackingLink>;
+  createTrackingLink(link: InsertTrackingLink & { token: string, createdByIp?: string }): Promise<TrackingLink>;
   
   // Captures
   getCaptures(linkId: number): Promise<Capture[]>;
@@ -22,7 +22,10 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getTrackingLinks(): Promise<TrackingLink[]> {
+  async getTrackingLinks(ip?: string): Promise<TrackingLink[]> {
+    if (ip) {
+      return await db.select().from(trackingLinks).where(eq(trackingLinks.createdByIp, ip));
+    }
     return await db.select().from(trackingLinks);
   }
 

@@ -10,7 +10,10 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   app.get(api.links.list.path, async (req, res) => {
-    const links = await storage.getTrackingLinks();
+    let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    if (Array.isArray(ip)) ip = ip[0];
+    
+    const links = await storage.getTrackingLinks(ip as string);
     res.json(links);
   });
 
@@ -26,7 +29,15 @@ export async function registerRoutes(
     try {
       const input = api.links.create.input.parse(req.body);
       const token = crypto.randomBytes(16).toString('hex');
-      const newLink = await storage.createTrackingLink({ ...input, token });
+      
+      let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+      if (Array.isArray(ip)) ip = ip[0];
+      
+      const newLink = await storage.createTrackingLink({ 
+        ...input, 
+        token,
+        createdByIp: ip as string 
+      });
       res.status(201).json(newLink);
     } catch (err) {
       if (err instanceof z.ZodError) {

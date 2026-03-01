@@ -6,6 +6,7 @@ export const trackingLinks = pgTable("tracking_links", {
   id: serial("id").primaryKey(),
   token: text("token").notNull().unique(), 
   name: text("name").notNull(),
+  createdByIp: text("created_by_ip"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
