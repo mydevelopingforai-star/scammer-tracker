@@ -12,6 +12,9 @@ export async function registerRoutes(
   app.get(api.links.list.path, async (req, res) => {
     let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     if (Array.isArray(ip)) ip = ip[0];
+    if (typeof ip === 'string' && ip.includes(',')) {
+      ip = ip.split(',')[0].trim();
+    }
     
     const links = await storage.getTrackingLinks(ip as string);
     res.json(links);
@@ -32,6 +35,9 @@ export async function registerRoutes(
       
       let ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
       if (Array.isArray(ip)) ip = ip[0];
+      if (typeof ip === 'string' && ip.includes(',')) {
+        ip = ip.split(',')[0].trim();
+      }
       
       const newLink = await storage.createTrackingLink({ 
         ...input, 
